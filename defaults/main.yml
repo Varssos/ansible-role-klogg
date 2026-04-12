@@ -1,0 +1,8 @@
+# klogg
+klogg_package_name: "klogg"
+klogg_gpg_key_url: "https://klogg.filimonov.dev/klogg.gpg.key"
+klogg_gpg_key_tmp: "/tmp/klogg.gpg.key"
+klogg_gpg_keyring: "/etc/apt/keyrings/klogg.gpg"
+# klogg repo does not support codenames newer than jammy yet
+# TODO: replace with {{ ubuntu_codename }} when noble/newer is supported
+klogg_repo_codename: "jammy"

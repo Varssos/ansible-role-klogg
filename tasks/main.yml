@@ -1,0 +1,53 @@
+---
+# Based on: https://github.com/variar/klogg?tab=readme-ov-file#linux
+
+- name: Check if klogg is already installed
+  ansible.builtin.command: dpkg-query -W {{ klogg_package_name }}
+  register: klogg_installed
+  failed_when: false
+  changed_when: false
+
+- name: Ensure apt keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  become: true
+  when: klogg_installed.rc != 0
+
+- name: Download klogg GPG key
+  ansible.builtin.get_url:
+    url: "{{ klogg_gpg_key_url }}"
+    dest: "{{ klogg_gpg_key_tmp }}"
+    mode: '0644'
+  when: klogg_installed.rc != 0
+
+- name: Convert key to apt keyring format
+  ansible.builtin.command: >
+    gpg --dearmor --yes --output {{ klogg_gpg_keyring }} {{ klogg_gpg_key_tmp }}
+  args:
+    creates: "{{ klogg_gpg_keyring }}"
+  become: true
+  when: klogg_installed.rc != 0
+
+- name: Remove temporary GPG key file
+  ansible.builtin.file:
+    path: "{{ klogg_gpg_key_tmp }}"
+    state: absent
+  when: klogg_installed.rc != 0
+
+- name: Add klogg apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by={{ klogg_gpg_keyring }}] https://klogg.filimonov.dev/deb/{{ klogg_repo_codename }} {{ klogg_repo_codename }} utils"
+    filename: klogg
+    state: present
+  become: true
+  when: klogg_installed.rc != 0
+
+- name: Install klogg
+  ansible.builtin.apt:
+    name: "{{ klogg_package_name }}"
+    state: present
+    update_cache: true
+  become: true
+  when: klogg_installed.rc != 0
