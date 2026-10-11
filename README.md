@@ -29,6 +29,22 @@ The klogg repository currently does not support codenames newer than `jammy`. Th
     - role: klogg
 ```
 
+## Manual setup (without Ansible)
+
+The role defaults to the `jammy` repository, including on newer releases:
+
+```bash
+sudo apt install curl gnupg
+sudo install -d -m 0755 /etc/apt/keyrings
+curl -fL https://klogg.filimonov.dev/klogg.gpg.key -o /tmp/klogg.gpg.key
+sudo gpg --dearmor --yes --output /etc/apt/keyrings/klogg.gpg /tmp/klogg.gpg.key
+sudo chmod 0644 /etc/apt/keyrings/klogg.gpg
+rm /tmp/klogg.gpg.key
+echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/klogg.gpg] https://klogg.filimonov.dev/deb/jammy jammy utils' | sudo tee /etc/apt/sources.list.d/klogg.list
+sudo apt update
+sudo apt install klogg
+```
+
 ## License
 
 MIT
